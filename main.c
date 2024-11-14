@@ -11,7 +11,7 @@ int main() {
     WordData *lexicon = read_lexicon_file("vader_lexicon.txt", &word_count);
 
     if (lexicon == NULL) {
-        printf("Failed to load lexicon.\n");
+        printf("File not readadable.\n");
         return 1;
     }
 

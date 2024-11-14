@@ -2,25 +2,6 @@
 #include <errno.h>
 #include <math.h>
 
-// Define Positive Amplifiers that amplify positive sentiment
-const char *positive_intensifiers[] = {
-    "absolutely", "completely", "extremely", "really", "so", "totally",
-    "very", "particularly", "exceptionally", "incredibly", "remarkably"
-};
-
-// Define Negative Amplifiers that slightly reduce positive or amplify negative sentiment
-const char *negative_intensifiers[] = {
-    "barely", "hardly", "scarcely", "somewhat", "mildly", "slightly",
-    "partially", "fairly", "pretty much"
-};
-
-// Define words indicating negation, which invert the sentiment of the following word
-const char *negation_words[] = {
-    "not", "isn't", "doesn't", "wasn't", "shouldn't", "won't", "cannot", "can't",
-    "nor", "neither",
-    "without", "lack", "missing"
-};
-
 // Reads data from a file and stores it in an array of WordData structs
 WordData* read_lexicon_file(const char *filename, int *word_count) {
     FILE *file = fopen(filename, "r");
@@ -110,7 +91,7 @@ SentimentResult calculate_sentiment_score(const char *sentence, WordData *lexico
 
     // Flags to track if previous word was an intensifier or negation
     bool previous_word_is_intensifier = false;
-    bool previous_word_is_negation = false;
+    bool negation_active = false;
 
     // Loop through each token to analyze its sentiment
     while (token != NULL) {
@@ -163,8 +144,8 @@ SentimentResult calculate_sentiment_score(const char *sentence, WordData *lexico
             // Set flag for the next word
             previous_word_is_intensifier = true;
         } else if (is_negation) {
-            // Set flag for the next word
-            previous_word_is_negation = true;
+            // Activate negation effect for subsequent words
+            negation_active = true;
         } else if (wordData.word[0] != '\0') {
             // Process the sentiment value if the word is in the lexicon
             float sentimentValue = wordData.value1;
@@ -174,22 +155,22 @@ SentimentResult calculate_sentiment_score(const char *sentence, WordData *lexico
                 sentimentValue *= CAPS;
             }
 
-            // Apply previous intensifier or negation if applicable
+            // Apply previous intensifier if applicable
             if (previous_word_is_intensifier) {
                 sentimentValue += sentimentValue * INTENSIFIER;
                 previous_word_is_intensifier = false; // Reset flag
             }
 
-            if (previous_word_is_negation) {
+            // Apply ongoing negation effect
+            if (negation_active) {
                 sentimentValue *= NEGATION;
-                previous_word_is_negation = false; // Reset flag
             }
 
             // Adjust sentiment for exclamation marks (if any)
             if (sentimentValue > 0) {
-                sentimentValue += exclamation * EXCLAMATION;
+                sentimentValue += (sentimentValue * EXCLAMATION * exclamation);
             } else {
-                sentimentValue -= exclamation * EXCLAMATION;
+                sentimentValue -= (sentimentValue * EXCLAMATION * exclamation);
             }
 
             // Store the sentiment value and add it to the cumulative sentiment sum
@@ -198,6 +179,11 @@ SentimentResult calculate_sentiment_score(const char *sentence, WordData *lexico
 
             // Move to the next index for storing scores
             index++;
+        }
+
+        // Deactivate negation if a punctuation or conjunction is reached
+        if (strcmp(lowerToken, "and") == 0 || strcmp(lowerToken, "or") == 0) {
+            negation_active = false;
         }
 
         // Get the next word token
