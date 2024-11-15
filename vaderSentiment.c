@@ -36,6 +36,9 @@ WordData* read_lexicon_file(const char *filename, int *word_count) {
             words = temp; // Point to the newly allocated memory
         }
 
+
+
+        //USED CHATGPT TO GET THE LOGIC RIGHT FOR THIS LINE
         // Extract the word and its sentiment scores from the line
         sscanf(line, "%s %f %f", words[*word_count].word, &words[*word_count].value1, &words[*word_count].value2);
         (*word_count)++; // Increment word count
@@ -76,6 +79,10 @@ void sift_sentiment_scores(float sentiments[], int count, float *pos_sum, float 
         }
     }
 }
+
+//USED CHATGPT TO GET THE LOGIC RIGHT FOR THIS FUNCTION, ALONG WITH PYTHON LIBARIES GIVEN
+
+//USED CHATGPT TO GET TOKEN LOGIC TECHNIQUE, ALONG WITH YOUTUBE TUTORIALS
 
 // Calculates the sentiment score of a sentence and returns a SentimentResult struct
 SentimentResult calculate_sentiment_score(const char *sentence, WordData *lexicon, int word_count) {
@@ -144,6 +151,8 @@ SentimentResult calculate_sentiment_score(const char *sentence, WordData *lexico
             }
         }
 
+
+        //USED CHATGPT FOR FLAG METHOD, MY METHOD DID NOT CHECK FULL SENTENCE AND WOULD GIVEN INCORRECT RESULTS
         // Handle intensifier flag
         if (is_intensifier) {
             previous_word_is_intensifier = true; // Set flag for next word
@@ -188,6 +197,7 @@ SentimentResult calculate_sentiment_score(const char *sentence, WordData *lexico
 
             index++; // Move to the next index for storing scores
 
+            //CHATGPT HELPED ME WITH THIS LOGIC
             // Deactivate negation if a conjunction or punctuation is encountered
             if (strcmp(lowerToken, "and") == 0 || strcmp(lowerToken, "or") == 0 || strcmp(lowerToken, ".") == 0) {
                 negation_active = false; // Reset negation effect
@@ -201,6 +211,7 @@ SentimentResult calculate_sentiment_score(const char *sentence, WordData *lexico
         token = strtok(NULL, " \n\t\v\f\r,.");
     }
 
+    //CHATGPT HELPED ME WITH THIS LOGIC
     // Sift sentiment scores into positive, negative, and neutral sums
     sift_sentiment_scores(scores, index, &pos_sum, &neg_sum, &neu_count);
 
